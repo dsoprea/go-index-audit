@@ -1,4 +1,4 @@
-package waitindex
+package indexwait
 
 import (
 	"testing"

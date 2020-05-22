@@ -1,4 +1,4 @@
-package waitindex
+package indexwait
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	latestModuleInfoProxyUrlFormat = "https://proxy.golang.org/%s/@latest"
+	defaultProxyUrl = "https://proxy.golang.org"
 
 	// moduleInfoTimestampFormat is the layout string that tells us how to
 	// parse the timestamp reported by the Go Proxy [specification].
@@ -23,16 +23,21 @@ const (
 
 // ProxyClient knows how to hit the globalpublic Go Proxy endpoint.
 type ProxyClient struct {
-	client *http.Client
-	url    string
+	client  *http.Client
+	rootUrl string
 }
 
 // NewProxyClient returns a new ProxyClient struct.
-func NewProxyClient() *ProxyClient {
+func NewProxyClient(url string) *ProxyClient {
 	client := new(http.Client)
 
+	if url == "" {
+		url = defaultProxyUrl
+	}
+
 	return &ProxyClient{
-		client: client,
+		client:  client,
+		rootUrl: url,
 	}
 }
 
@@ -139,7 +144,7 @@ func (pc *ProxyClient) FetchModuleInfo(moduleName string) (cmi CachedModuleInfo,
 		}
 	}()
 
-	url := fmt.Sprintf(latestModuleInfoProxyUrlFormat, moduleName)
+	url := fmt.Sprintf("%s/%s/@latest", pc.rootUrl, moduleName)
 
 	response, err := pc.client.Get(url)
 	log.PanicIf(err)
