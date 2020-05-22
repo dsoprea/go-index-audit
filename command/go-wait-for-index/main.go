@@ -81,7 +81,8 @@ func main() {
 
 	pc := indexwait.NewProxyClient(arguments.ProxyUrl)
 
-	timeoutAt := time.Now().Add(arguments.TimeoutDuration)
+	startTime := time.Now()
+	timeoutAt := startTime.Add(arguments.TimeoutDuration)
 
 	for {
 		cmi, err := pc.FetchModuleInfo(packageName)
@@ -110,6 +111,11 @@ func main() {
 
 		time.Sleep(arguments.PollInterval)
 	}
+
+	stopTime := time.Now()
+	duration := stopTime.Sub(startTime)
+
+	mainLogger.Debugf(nil, "Wait time: [%s]", duration)
 
 	// TODO(dustin): We should also be able to call commands with the result.
 }
