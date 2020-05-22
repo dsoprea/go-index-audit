@@ -20,11 +20,14 @@ var (
 )
 
 type parameters struct {
-	PackageName     string        `short:"p" long:"package-name" required:"true" description:"Package name"`
 	TimeoutDuration time.Duration `short:"t" long:"timeout" description:"Alternative timeout duration" default:"1h"`
 	PollInterval    time.Duration `short:"i" long:"poll-interval" description:"Alternative pol interval" default:"10s"`
 	IsVerbose       bool          `short:"v" long:"verbose" description:"Print logging"`
 	ProxyUrl        string        `short:"P" long:"proxy-url" description:"Non-default Proxy URL"`
+
+	Positional struct {
+		PackageName string `positional-arg-name:"package-name" description:"Package name"`
+	} `positional-args:"yes" required:"yes"`
 }
 
 var (
@@ -56,9 +59,11 @@ func main() {
 		log.LoadConfiguration(scp)
 	}
 
+	packageName := arguments.Positional.PackageName
+
 	p := indexwait.Package{}
 
-	packagePath, vcsName, err := p.GetPackagePath(arguments.PackageName)
+	packagePath, vcsName, err := p.GetPackagePath(packageName)
 	log.PanicIf(err)
 
 	mainLogger.Debugf(nil, "Package path: [%s]", packagePath)
@@ -79,7 +84,7 @@ func main() {
 	timeoutAt := time.Now().Add(arguments.TimeoutDuration)
 
 	for {
-		cmi, err := pc.FetchModuleInfo(arguments.PackageName)
+		cmi, err := pc.FetchModuleInfo(packageName)
 		log.PanicIf(err)
 
 		mv, err := cmi.VersionPhrase.Parse()
