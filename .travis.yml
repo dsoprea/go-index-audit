@@ -3,9 +3,6 @@ go:
   - master
   - stable
   - "1.13"
-  - "1.12"
-  - "1.11"
-  - "1.10"
 install:
   - go get -t ./...
   - go get github.com/mattn/goveralls
