@@ -5,11 +5,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/dsoprea/go-logging"
+	"github.com/dsoprea/go-utility/testing"
 	"github.com/jessevdk/go-flags"
 
 	"github.com/dsoprea/go-index-audit"
@@ -40,13 +40,13 @@ func main() {
 			err := errRaw.(error)
 			log.PrintError(err)
 
-			os.Exit(-2)
+			ritesting.Exit(-2)
 		}
 	}()
 
 	_, err := flags.Parse(arguments)
 	if err != nil {
-		os.Exit(-1)
+		ritesting.Exit(-1)
 	}
 
 	if arguments.IsVerbose == true {
@@ -71,7 +71,7 @@ func main() {
 	vcs, found := indexwait.GetVcs(vcsName)
 	if found == false {
 		fmt.Printf("VCS [%s] not currently supported.\n", vcsName)
-		os.Exit(1)
+		ritesting.Exit(1)
 	}
 
 	currentCommitRevision, currentCommitTimestamp, err := vcs.GetHeadCommit(packagePath)
@@ -106,7 +106,7 @@ func main() {
 
 		if time.Now().After(timeoutAt) == true {
 			fmt.Printf("Module has not been updated. Timeout.\n")
-			os.Exit(1)
+			ritesting.Exit(1)
 		}
 
 		time.Sleep(arguments.PollInterval)

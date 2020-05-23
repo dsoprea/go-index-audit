@@ -5,7 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dsoprea/go-logging"
@@ -137,24 +139,39 @@ func (cmi CachedModuleInfo) DumpFields() {
 }
 
 // FetchModuleInfo returns the current published version of the module.
-func (pc *ProxyClient) FetchModuleInfo(moduleName string) (cmi CachedModuleInfo, err error) {
+func (pc *ProxyClient) FetchModuleInfo(packageName string) (cmi CachedModuleInfo, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = log.Wrap(state.(error))
 		}
 	}()
 
-	url := fmt.Sprintf("%s/%s/@latest", pc.rootUrl, moduleName)
+	url := fmt.Sprintf("%s/%s/@latest", pc.rootUrl, packageName)
 
 	response, err := pc.client.Get(url)
-	log.PanicIf(err)
+	if err != nil {
+		fmt.Printf("Could not query proxy: [%s]\n", err.Error())
+		log.Panic(err)
+	}
 
 	defer response.Body.Close()
 
-	jd := json.NewDecoder(response.Body)
+	raw, err := ioutil.ReadAll(response.Body)
+	log.PanicIf(err)
+
+	b := bytes.NewBuffer(raw)
+	jd := json.NewDecoder(b)
 
 	err = jd.Decode(&cmi)
-	log.PanicIf(err)
+	if err != nil {
+		fmt.Printf("Could not parse return: [%s]\n", err.Error())
+		fmt.Printf("\n")
+		fmt.Printf("OUTPUT:\n")
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", b.String())
+
+		log.Panic(err)
+	}
 
 	return cmi, nil
 }
