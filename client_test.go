@@ -76,14 +76,14 @@ func TestCachedModuleInfo_DumpFields(t *testing.T) {
 }
 
 func TestNewProxyClient(t *testing.T) {
-	pc := NewProxyClient()
+	pc := NewProxyClient("")
 	if pc.client == nil {
 		t.Fatalf("'client' field not set.")
 	}
 }
 
 func TestProxyClient_FetchModuleInfo(t *testing.T) {
-	pc := NewProxyClient()
+	pc := NewProxyClient("")
 
 	cmi, err := pc.FetchModuleInfo(testModuleName)
 	log.PanicIf(err)
