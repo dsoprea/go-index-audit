@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+// Git provides a VCS implementation for Git.
 type Git struct {
 }
 
@@ -15,7 +16,7 @@ func (*Git) Name() string {
 	return "git"
 }
 
-// GetHeadcommit returns the current revision of the package/module.
+// GetHeadCommit returns the current revision of the package/module.
 func (*Git) GetHeadCommit(packagePath string) (revision string, timestamp time.Time, err error) {
 	defer func() {
 		if state := recover(); state != nil {
