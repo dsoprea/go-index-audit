@@ -1,6 +1,8 @@
 package indexwait
 
 import (
+	"os"
+	"path"
 	"time"
 
 	"github.com/dsoprea/go-logging"
@@ -24,7 +26,25 @@ func (*Git) GetHeadCommit(packagePath string) (revision string, timestamp time.T
 		}
 	}()
 
-	gr, err := git.PlainOpen(packagePath)
+	repositoryPath := packagePath
+
+	// Search from current directory up to find the repository root.
+	for repositoryPath != "/" && repositoryPath != "." {
+		metaPath := path.Join(repositoryPath, ".git")
+
+		f, err := os.Open(metaPath)
+		f.Close()
+
+		if err == nil {
+			break
+		} else if os.IsNotExist(err) != true {
+			log.Panic(err)
+		}
+
+		repositoryPath = path.Dir(repositoryPath)
+	}
+
+	gr, err := git.PlainOpen(repositoryPath)
 	log.PanicIf(err)
 
 	lo := new(git.LogOptions)
