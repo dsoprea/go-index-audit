@@ -41,6 +41,7 @@ func TestMain(t *testing.T) {
 
 	os.Args = []string{
 		"",
+		"--print-waiting",
 		"github.com/dsoprea/go-index-audit",
 	}
 

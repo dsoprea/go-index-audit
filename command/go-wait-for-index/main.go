@@ -20,10 +20,11 @@ var (
 )
 
 type parameters struct {
-	TimeoutDuration time.Duration `short:"t" long:"timeout" description:"Alternative timeout duration" default:"1h"`
-	PollInterval    time.Duration `short:"i" long:"poll-interval" description:"Alternative pol interval" default:"10s"`
-	IsVerbose       bool          `short:"v" long:"verbose" description:"Print logging"`
-	ProxyUrl        string        `short:"P" long:"proxy-url" description:"Non-default Proxy URL"`
+	TimeoutDuration     time.Duration `short:"t" long:"timeout" description:"Alternative timeout duration" default:"1h"`
+	PollInterval        time.Duration `short:"i" long:"poll-interval" description:"Alternative pol interval" default:"10s"`
+	IsVerbose           bool          `short:"v" long:"verbose" description:"Print logging"`
+	ProxyUrl            string        `short:"P" long:"proxy-url" description:"Non-default Proxy URL"`
+	DoPrintWaitActivity bool          `short:"w" long:"print-waiting" description:"Print periodic verbosity to show that the process is still waiting"`
 
 	Positional struct {
 		PackageName string `positional-arg-name:"package-name" description:"Package name"`
@@ -83,8 +84,9 @@ func main() {
 
 	startTime := time.Now()
 	timeoutAt := startTime.Add(arguments.TimeoutDuration)
+	lastWaitNotifyTime := startTime
 
-	for {
+	for i := 0; ; i++ {
 		cmi, err := pc.FetchModuleInfo(packageName)
 		log.PanicIf(err)
 
@@ -104,9 +106,21 @@ func main() {
 			break
 		}
 
-		if time.Now().After(timeoutAt) == true {
+		nowTime := time.Now()
+
+		if nowTime.After(timeoutAt) == true {
 			fmt.Printf("Module has not been updated. Timeout.\n")
 			ritesting.Exit(1)
+		}
+
+		// This is primarily in service of CI unit-tests, where we'll timeout
+		// without any screen-output.
+		if arguments.DoPrintWaitActivity == true {
+			timeSinceLastAlert := nowTime.Sub(lastWaitNotifyTime)
+			if timeSinceLastAlert > time.Minute*1 {
+				lastWaitNotifyTime = nowTime
+				fmt.Printf("Still waiting.\n")
+			}
 		}
 
 		time.Sleep(arguments.PollInterval)
