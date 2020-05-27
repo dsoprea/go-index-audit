@@ -119,7 +119,7 @@ func main() {
 			timeSinceLastAlert := nowTime.Sub(lastWaitNotifyTime)
 			if timeSinceLastAlert > time.Minute*1 {
 				lastWaitNotifyTime = nowTime
-				fmt.Printf("Still waiting.\n")
+				fmt.Printf(".")
 			}
 		}
 
@@ -130,6 +130,10 @@ func main() {
 	duration := stopTime.Sub(startTime)
 
 	mainLogger.Debugf(nil, "Wait time: [%s]", duration)
+
+	if arguments.DoPrintWaitActivity == true {
+		fmt.Printf("\n")
+	}
 
 	// TODO(dustin): We should also be able to call commands with the result.
 }
